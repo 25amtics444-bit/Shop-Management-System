@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAHALAXMI LADIES WEAR</title>
+<style>
+:root{
+  --primary:#8b2f62;
+  --primary2:#c44b87;
+  --soft:#fff4f8;
+  --gold:#c59a4a;
+  --ink:#29232a;
+  --muted:#756b73;
+  --card:#ffffff;
+  --border:#f0dce5;
+  --shadow:0 10px 30px rgba(91,37,66,.10);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,Arial,sans-serif;
+  background:linear-gradient(135deg,#fff8fb 0%,#f7f4f8 55%,#fff 100%);
+  color:var(--ink);
+}
+header{
+  background:linear-gradient(110deg,#6d204c,#9d356e 55%,#c44b87);
+  color:white;padding:18px 28px;
+  font-size:22px;font-weight:800;letter-spacing:.3px;
+  box-shadow:0 5px 18px rgba(109,32,76,.18);
+}
+nav{
+  display:flex;gap:8px;flex-wrap:wrap;padding:12px 20px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  box-shadow:0 2px 15px #0000000d;position:sticky;top:0;z-index:10
+}
+nav button{
+  background:transparent;color:#624a58;border:1px solid transparent;
+  border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700
+}
+nav button:hover{background:var(--soft);color:var(--primary);border-color:var(--border)}
+button{
+  border:0;border-radius:10px;padding:11px 16px;cursor:pointer;
+  background:linear-gradient(110deg,var(--primary),var(--primary2));
+  color:white;font-weight:700;box-shadow:0 5px 14px rgba(139,47,98,.18)
+}
+button:hover{transform:translateY(-1px)}
+button.secondary{background:#f3edf1;color:#594b54;box-shadow:none}
+.page{max-width:1180px;margin:auto;padding:26px 20px 40px}
+h1{font-size:34px;margin:0 0 5px}
+h2{margin-top:0}
+.muted{color:var(--muted)}
+.big{font-size:28px;font-weight:800;margin-top:7px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.card{
+  background:rgba(255,255,255,.94);border:1px solid var(--border);
+  border-radius:18px;padding:19px;box-shadow:var(--shadow)
+}
+.card:hover{box-shadow:0 14px 35px rgba(91,37,66,.13)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+input,select{
+  width:100%;padding:12px;border:1px solid #e5d6de;border-radius:10px;
+  margin:5px 0 12px;background:#fff;color:var(--ink);outline:none
+}
+input:focus,select:focus{border-color:var(--primary2);box-shadow:0 0 0 3px #c44b8718}
+table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden}
+th{background:#fff3f8;color:#70445b}
+th,td{padding:11px;border-bottom:1px solid #f1e6eb;text-align:left}
+.total{font-size:22px;font-weight:700}
+.hero{
+  background:linear-gradient(120deg,#fff0f6,#fff,#fff5df);
+  border:1px solid var(--border);border-radius:22px;padding:26px;
+  box-shadow:var(--shadow);margin-bottom:18px
+}
+.badge{
+  display:inline-block;background:#f8e3ed;color:#8b2f62;
+  border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800
+}
+.category{
+  background:linear-gradient(145deg,#fff,#fff5f8);
+  border:1px solid var(--border);border-radius:15px;padding:15px
+}
+.category span{font-size:25px}
+@media(max-width:600px){.page{padding:18px 12px 30px}h1{font-size:28px}header{padding:16px 15px;font-size:18px}}
+@media print{header,nav,.actions{display:none}.page{padding:0}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header>👗 MAHALAXMI LADIES WEAR <span style="font-size:13px;font-weight:400;opacity:.85"> | Shop Management</span></header>
+<nav>
+<button onclick="show('dashboard')">Dashboard</button>
+<button onclick="show('billing')">🧾 Billing</button>
+<button onclick="show('stock')">📦 Stock</button>
+<button onclick="show('customers')">👥 Customers</button>
+<button onclick="show('udhaar')">🤝 Udhaar</button>
+<button onclick="show('expenses')">💸 Expenses</button>
+<button onclick="show('reports')">📊 Reports</button>
+<button onclick="show('search')">🔎 Search</button>
+<button onclick="show('backup')">💾 Backup</button>
+<button onclick="show('settings')">⚙️ Reset / Settings</button>
+</nav>
+<main class="page" id="app"></main>
+
+<script>
+const categories=[
+ "Printed Materials","Work Materials","Palazzo Pair","Worked Pairs",
+ "Under Garments","Kurtis","Short Kurtis","Dresses","Leggings"
+];
+
+let bills=JSON.parse(localStorage.getItem("mlw_bills")||"[]");
+let stock=JSON.parse(localStorage.getItem("mlw_stock")||"[]");
+let customers=JSON.parse(localStorage.getItem("mlw_customers")||"[]");
+let expenses=JSON.parse(localStorage.getItem("mlw_expenses")||"[]");
+let payments=JSON.parse(localStorage.getItem("mlw_payments")||"[]");
+let current=[];
+
+function money(n){return "₹"+Number(n||0).toFixed(2)}
+
+function dataSavedNotice(){
+ const el=document.getElementById("localDataStatus");
+ if(el) el.textContent="💾 DATA SAVED ON THIS DEVICE • "+new Date().toLocaleTimeString();
+}
+
+function save(){
+ localStorage.setItem("mlw_bills",JSON.stringify(bills));
+ localStorage.setItem("mlw_stock",JSON.stringify(stock));
+ localStorage.setItem("mlw_customers",JSON.stringify(customers));
+ localStorage.setItem("mlw_expenses",JSON.stringify(expenses));
+ localStorage.setItem("mlw_payments",JSON.stringify(payments));
+ dataSavedNotice();
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
+function sku(){return "MLW-"+Date.now().toString().slice(-7)}
+function findStock(name,size,color){return stock.find(x=>x.name===name && x.size===size && x.color===color)}
+function totalSales(){return bills.reduce((a,b)=>a+b.total,0)}
+function totalUdhaar(){return bills.filter(b=>b.payment==="Udhaar").reduce((a,b)=>a+(b.balance??b.total),0)}
+function totalExpenses(){return expenses.reduce((a,b)=>a+b.amount,0)}
+function profit(){return totalSales()-totalExpenses()}
+
+
+function exportBackup(){
+ const data={
+   app:"MAHALAXMI LADIES WEAR",
+   version:"V3",
+   exportedAt:new Date().toISOString(),
+   bills,stock,customers,expenses,payments
+ };
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download="MAHALAXMI_LADIES_WEAR_BACKUP_"+new Date().toISOString().slice(0,10)+".json";
+ a.click();
+ URL.revokeObjectURL(url);
+}
+function importBackup(event){
+ const file=event.target.files?.[0];
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const data=JSON.parse(reader.result);
+   if(!data||data.app!=="MAHALAXMI LADIES WEAR")throw new Error("Invalid backup");
+   bills=Array.isArray(data.bills)?data.bills:[];
+   stock=Array.isArray(data.stock)?data.stock:[];
+   customers=Array.isArray(data.customers)?data.customers:[];
+   expenses=Array.isArray(data.expenses)?data.expenses:[];
+   payments=Array.isArray(data.payments)?data.payments:[];
+   save();
+   alert("Backup restored successfully.");
+   show("dashboard");
+  }catch(e){alert("Invalid MAHALAXMI LADIES WEAR backup file.");}
+ };
+ reader.readAsText(file);
+}
+function backupPage(){
+ document.getElementById("app").innerHTML=`
+ <h1>💾 Data & Backup</h1>
+ <div class="card">
+   <h2>Your Data Is Saved on This Device</h2>
+   <p class="muted">Your shop data is saved automatically in this browser on this device. You can also download a backup file for extra safety.</p>
+   <div class="actions">
+     <button onclick="exportBackup()">⬇️ Download Backup</button>
+     <label style="display:inline-block;padding:11px 16px;border-radius:10px;background:#f3edf1;color:#594b54;font-weight:700;cursor:pointer">
+       ⬆️ Restore Backup
+       <input type="file" accept=".json,application/json" onchange="importBackup(event)" style="display:none">
+     </label>
+   </div>
+ </div>
+ <div class="card" style="margin-top:15px">
+   <h2>Current Data</h2>
+   <p>📦 Products: <b>${stock.length}</b></p>
+   <p>🧾 Bills: <b>${bills.length}</b></p>
+   <p>👥 Customers: <b>${customers.length}</b></p>
+   <p>💸 Expenses: <b>${expenses.length}</b></p>
+   <p>🤝 Payment records: <b>${payments.length}</b></p>
+ </div>
+ <div class="card" style="margin-top:15px">
+   <h2>📌 How Your Data Is Saved</h2>
+   <p class="muted">This website works without a server. Bills, stock, customers, Udhaar and expenses are saved automatically in your browser using local storage. Use Download Backup regularly if you want a portable copy.</p>
+ </div>`;
+}
+
+function show(page){
+ if(page==="dashboard")dashboard();
+ if(page==="billing")billing();
+ if(page==="stock")stockPage();
+ if(page==="udhaar")udhaar();
+ if(page==="customers")customerPage();
+ if(page==="expenses")expensePage();
+ if(page==="reports")reports();
+ if(page==="search")searchPage();
+ if(page==="backup")backupPage();
+ if(page==="settings")settingsPage();
+}
+function dashboard(){
+ const today=new Date().toLocaleDateString();
+ const todaySales=bills.filter(b=>new Date(b.date).toLocaleDateString()===today).reduce((a,b)=>a+b.total,0);
+ const qty=stock.reduce((a,b)=>a+b.qty,0);
+ const low=stock.filter(x=>x.qty<=5);
+ document.getElementById("app").innerHTML=`
+ <section class="hero"><span class="badge">✨ BOUTIQUE MANAGEMENT</span>
+ <h1 style="margin-top:10px">MAHALAXMI LADIES WEAR</h1>
+ <p class="muted">Complete billing, inventory, customer and accounts management.</p>
+ <div class="actions"><button onclick="show('billing')">＋ New Bill</button><button class="secondary" onclick="show('stock')">📦 Add Stock</button></div></section>
+ <div class="grid">
+ <div class="card"><div class="muted">🌸 Today's Sales</div><div class="big">${money(todaySales)}</div></div>
+ <div class="card"><div class="muted">💰 Total Sales</div><div class="big">${money(totalSales())}</div></div>
+ <div class="card"><div class="muted">🧾 Bills</div><div class="big">${bills.length}</div></div>
+ <div class="card"><div class="muted">🤝 Udhaar</div><div class="big">${money(totalUdhaar())}</div></div>
+ <div class="card"><div class="muted">📦 Stock Units</div><div class="big">${qty}</div></div>
+ <div class="card"><div class="muted">📈 Est. Profit</div><div class="big">${money(profit())}</div></div>
+ </div>
+ <div class="card" style="margin-top:18px"><h2>Quick Actions</h2><div class="actions">
+ <button onclick="show('billing')">🧾 Billing</button><button onclick="show('stock')">📦 Stock</button>
+ <button onclick="show('customers')">👥 Customers</button><button onclick="show('udhaar')">🤝 Udhaar</button>
+ <button onclick="show('expenses')">💸 Expenses</button><button onclick="show('reports')">📊 Reports</button>
+ <button onclick="show('search')">🔎 Search</button><button onclick="show('backup')">💾 Backup</button></div></div>
+ <div class="card" style="margin-top:18px"><h2>👗 Collections</h2><div class="grid">
+ ${categories.map((x,i)=>`<div class="category"><span>${["🌸","✨","👖","💎","🩷","👚","🧥","💃","🩰"][i]}</span><div style="margin-top:8px;font-weight:800">${x}</div></div>`).join("")}
+ </div></div>
+ <div class="card" style="margin-top:18px"><h2>⚠️ Stock Alerts</h2>
+ ${low.length?low.map(x=>`<p>⚠️ <b>${esc(x.name)}</b> / ${esc(x.size)} / ${esc(x.color)} — ${x.qty} left</p>`).join(""):"<p class='muted'>✓ No low-stock items.</p>"}</div>`;
+}
+
+function billing(){
+ document.getElementById("app").innerHTML=`
+ <h1>🧾 New Bill</h1>
+ <div class="card"><label>Customer Name</label><input id="customer" list="customerList" placeholder="Walk-in Customer">
+ <datalist id="customerList">${customers.map(c=>`<option value="${esc(c.name)}">${esc(c.phone)}</option>`).join("")}</datalist>
+ <label>Customer Mobile</label><input id="phone" placeholder="Optional mobile number">
+ <h2>Add Product</h2><label>Category / Product</label><select id="cat" onchange="autoBillPrice()">${categories.map(x=>`<option>${x}</option>`).join("")}</select>
+ <label>Size</label><select id="size" onchange="autoBillPrice()"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>Free Size</option></select>
+ <label>Color</label><input id="color" placeholder="e.g. Pink" oninput="autoBillPrice()">
+ <label>Quantity</label><input id="qty" type="number" value="1" min="1">
+ <label>Selling Price <span class="muted">(automatic from stock)</span></label><input id="price" type="number" min="0" placeholder="Select product / size / color" readonly>
+ <div class="actions"><button onclick="addItem()">Add Item</button><button class="secondary" onclick="current=[];billing()">Clear</button></div></div>
+ <div id="billItems" class="card" style="margin-top:15px"></div>`;
+ autoBillPrice();
+ renderBill();
+}
+function autoBillPrice(){
+ const name=document.getElementById("cat")?.value;
+ const size=document.getElementById("size")?.value;
+ const color=(document.getElementById("color")?.value||"").trim()||"Any";
+ const price=document.getElementById("price");
+ if(!price)return;
+ const s=findStock(name,size,color);
+ if(s){
+   price.value=s.price;
+   price.placeholder="Automatic selling price";
+ }else{
+   price.value="";
+   price.placeholder="No exact stock found";
+ }
+}
+
+function addItem(){
+ const name=document.getElementById("cat").value,size=document.getElementById("size").value,color=document.getElementById("color").value.trim()||"Any";
+ const q=+document.getElementById("qty").value,p=+document.getElementById("price").value;
+ const s=findStock(name,size,color);
+ if(q<=0||p<0)return alert("Enter valid quantity and price.");
+ if(!s)return alert("This exact product/size/color is not in stock.");
+ if(q>s.qty)return alert(`Only ${s.qty} available for ${name} / ${size} / ${color}.`);
+ current.push({name,size,color,qty:q,price:p,amount:q*p});
+ renderBill();
+}
+function renderBill(){
+ const box=document.getElementById("billItems");if(!box)return;
+ const sub=current.reduce((a,x)=>a+x.amount,0);
+ box.innerHTML=`<h2>Items in Bill (${current.length})</h2>
+ ${current.length?`<table><tr><th>Item</th><th>Size</th><th>Color</th><th>Qty</th><th>Rate</th><th>Amount</th><th></th></tr>
+ ${current.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${esc(x.size)}</td><td>${esc(x.color)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.amount)}</td><td><button class="secondary" onclick="removeItem(${i})">Remove</button></td></tr>`).join("")}</table>`:"<p class='muted'>No items added yet.</p>"}
+ <div style="margin-top:15px"><label>Discount %</label><input id="disc" type="number" value="0" min="0" max="100" oninput="updateBill()">
+ <label>GST %</label><input id="gst" type="number" value="5" min="0" oninput="updateBill()">
+ <label>Payment</label><select id="pay"><option>Cash</option><option>UPI</option><option>Card</option><option>Udhaar</option></select>
+ <label>Amount Received</label><input id="received" type="number" value="${sub}" min="0" oninput="updateBill()">
+ <div id="summary" class="total"></div>
+ <div class="actions"><button onclick="saveBill()">💾 Save Bill</button><button class="secondary" onclick="printCurrentBill()">🖨️ Print</button></div></div>`;
+ updateBill();
+}
+function removeItem(i){current.splice(i,1);renderBill()}
+function calcBill(){
+ const sub=current.reduce((a,x)=>a+x.amount,0),d=+(document.getElementById("disc")?.value||0),g=+(document.getElementById("gst")?.value||5);
+ const da=sub*d/100,tax=sub-da,ga=tax*g/100,total=tax+ga,received=+(document.getElementById("received")?.value||0);
+ return {sub,d,da,tax,g,ga,total,received,change:Math.max(0,received-total),balance:Math.max(0,total-received)}
+}
+function updateBill(){
+ const x=calcBill(),s=document.getElementById("summary");if(s)s.innerHTML=`Subtotal: ${money(x.sub)}<br>Discount: ${money(x.da)}<br>GST: ${money(x.ga)}<br><b>Grand Total: ${money(x.total)}</b><br>Received: ${money(x.received)}<br>${x.balance?`Balance Due: ${money(x.balance)}`:`Change: ${money(x.change)}`}`;
+}
+function saveBill(){
+ if(!current.length)return alert("Add at least one item.");
+ for(const sold of current){const s=findStock(sold.name,sold.size,sold.color);if(!s||sold.qty>s.qty)return alert(`Insufficient stock for ${sold.name} / ${sold.size} / ${sold.color}.`)}
+ const x=calcBill(), name=document.getElementById("customer").value.trim()||"Walk-in Customer",phone=document.getElementById("phone").value.trim(),payment=document.getElementById("pay").value;
+ const bill={id:"MLW-"+Date.now().toString().slice(-8),date:new Date().toLocaleString(),customer:name,phone,items:[...current],subtotal:x.sub,discount:x.da,gst:x.ga,total:x.total,payment,received:x.received,balance:x.balance};
+ bills.push(bill);
+ current.forEach(sold=>{const s=findStock(sold.name,sold.size,sold.color);s.qty-=sold.qty;if(s.qty<=0)stock=stock.filter(z=>z!==s)});
+ if(name!=="Walk-in Customer"){let c=customers.find(c=>c.phone&&c.phone===phone)||customers.find(c=>c.name.toLowerCase()===name.toLowerCase());if(!c)customers.push({name,phone,total:bill.total,udhaar:bill.balance});else{c.total=(c.total||0)+bill.total;c.udhaar=(c.udhaar||0)+bill.balance}}
+ if(bill.balance>0)payments.push({date:bill.date,customer:name,amount:bill.balance,type:"Udhaar"});
+ save();current=[];alert(`Bill ${bill.id} saved!\\nStock updated automatically.`);show("dashboard");
+}
+function printCurrentBill(){
+ if(!current.length)return alert("Add items first.");
+ const x=calcBill(),name=document.getElementById("customer").value||"Walk-in Customer";
+ const w=window.open("","_blank");w.document.write(`<html><head><title>MAHALAXMI LADIES WEAR</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#8b2f62}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd}.r{text-align:right}</style></head><body><h1>MAHALAXMI LADIES WEAR</h1><p>Customer: ${esc(name)}<br>Date: ${new Date().toLocaleString()}</p><table><tr><th>Item</th><th>Size</th><th>Color</th><th>Qty</th><th>Amount</th></tr>${current.map(i=>`<tr><td>${esc(i.name)}</td><td>${esc(i.size)}</td><td>${esc(i.color)}</td><td>${i.qty}</td><td>${money(i.amount)}</td></tr>`).join("")}</table><p class="r">Subtotal: ${money(x.sub)}<br>Discount: ${money(x.da)}<br>GST: ${money(x.ga)}<br><b>Grand Total: ${money(x.total)}</b></p><h3 style="text-align:center">Thank you for shopping with us ✨</h3><script>window.print()<\/script></body></html>`);w.document.close();
+}
+
+function stockPage(){
+ document.getElementById("app").innerHTML=`<h1>📦 Stock Management</h1>
+ <div class="card"><h2>Add Product Stock</h2><label>Category</label><select id="sname">${categories.map(x=>`<option>${x}</option>`).join("")}</select>
+ <label>Size</label><select id="ssize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>Free Size</option></select>
+ <label>Color</label><input id="scolor" placeholder="e.g. Pink"><label>SKU / Product Code</label><input id="ssku" value="${sku()}">
+ <label>Quantity</label><input id="sq" type="number" min="1"><label>Purchase Price</label><input id="buy" type="number" min="0"><label>Selling Price</label><input id="sp" type="number" min="0">
+ <button onclick="addStock()">Add / Update Stock</button></div>
+ <div class="card" style="margin-top:15px"><h2>Inventory</h2><input id="stockSearch" placeholder="🔎 Search product, SKU, size or color" oninput="renderStockTable()"><div id="stockTable"></div></div>`;
+ renderStockTable();
+}
+function addStock(){
+ const name=document.getElementById("sname").value,size=document.getElementById("ssize").value,color=document.getElementById("scolor").value.trim()||"Any",q=+document.getElementById("sq").value,buy=+document.getElementById("buy").value||0,p=+document.getElementById("sp").value||0;
+ if(q<=0)return alert("Enter quantity.");
+ let s=findStock(name,size,color);
+ if(s){s.qty+=q;s.buy=buy;s.price=p;s.sku=document.getElementById("ssku").value||s.sku}
+ else stock.push({name,size,color,qty:q,buy,price:p,sku:document.getElementById("ssku").value||sku()});
+ save();stockPage();
+}
+function renderStockTable(){
+ const box=document.getElementById("stockTable");if(!box)return;
+ const q=(document.getElementById("stockSearch")?.value||"").toLowerCase();
+ const rows=stock.filter(x=>[x.name,x.size,x.color,x.sku].join(" ").toLowerCase().includes(q));
+ box.innerHTML=`<table><tr><th>Product</th><th>Size</th><th>Color</th><th>SKU</th><th>Qty</th><th>Buy</th><th>Sell</th></tr>${rows.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.size)}</td><td>${esc(x.color)}</td><td>${esc(x.sku)}</td><td>${x.qty}</td><td>${money(x.buy)}</td><td>${money(x.price)}</td></tr>`).join("")||"<tr><td colspan=7>No stock found.</td></tr>"}</table>`;
+}
+
+function customerPage(){
+ document.getElementById("app").innerHTML=`<h1>👥 Customers</h1><div class="card"><label>Name</label><input id="cn"><label>Mobile</label><input id="cp"><button onclick="addCustomer()">Add Customer</button></div>
+ <div class="card" style="margin-top:15px"><table><tr><th>Name</th><th>Mobile</th><th>Purchases</th><th>Udhaar</th></tr>${customers.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${money(c.total)}</td><td>${money(c.udhaar)}</td></tr>`).join("")||"<tr><td colspan=4>No customers yet.</td></tr>"}</table></div>`;
+}
+function addCustomer(){const name=document.getElementById("cn").value.trim(),phone=document.getElementById("cp").value.trim();if(!name)return alert("Enter customer name.");if(customers.some(c=>c.phone===phone&&phone))return alert("Customer already exists.");customers.push({name,phone,total:0,udhaar:0});save();customerPage()}
+
+function udhaar(){
+ document.getElementById("app").innerHTML=`<h1>🤝 Udhaar / Payments</h1><div class="card"><h2>Outstanding</h2>${customers.filter(c=>(c.udhaar||0)>0).map(c=>`<div style="padding:12px;border-bottom:1px solid #eee"><b>${esc(c.name)}</b> — ${money(c.udhaar)} <button onclick="receivePayment('${esc(c.phone)}')">Record Payment</button></div>`).join("")||"<p class='muted'>No outstanding Udhaar.</p>"}</div>`;
+}
+function receivePayment(phone){
+ const c=customers.find(x=>x.phone===phone);if(!c)return;const amount=+prompt(`Amount received from ${c.name}:`,c.udhaar);if(!amount||amount<=0)return;c.udhaar=Math.max(0,c.udhaar-amount);payments.push({date:new Date().toLocaleString(),customer:c.name,amount,type:"Received"});save();udhaar();
+}
+
+function expensePage(){
+ document.getElementById("app").innerHTML=`<h1>💸 Purchases & Expenses</h1><div class="card"><label>Expense / Purchase</label><input id="en" placeholder="e.g. Supplier purchase, rent, electricity"><label>Amount</label><input id="ea" type="number" min="0"><button onclick="addExpense()">Save Expense</button></div>
+ <div class="card" style="margin-top:15px"><h2>Total Expenses: ${money(totalExpenses())}</h2>${expenses.map(e=>`<p>${e.date} — ${esc(e.name)} — <b>${money(e.amount)}</b></p>`).join("")||"<p class='muted'>No expenses.</p>"}</div>`;
+}
+function addExpense(){const name=document.getElementById("en").value.trim(),amount=+document.getElementById("ea").value;if(!name||amount<=0)return alert("Enter valid expense.");expenses.push({date:new Date().toLocaleString(),name,amount});save();expensePage()}
+
+function reports(){
+ const sales=totalSales(),exp=totalExpenses();
+ const pay={Cash:0,UPI:0,Card:0,Udhaar:0};bills.forEach(b=>pay[b.payment]=(pay[b.payment]||0)+b.total);
+ document.getElementById("app").innerHTML=`<h1>📊 Reports</h1><div class="grid">
+ <div class="card"><div class="muted">Sales</div><div class="big">${money(sales)}</div></div>
+ <div class="card"><div class="muted">Expenses</div><div class="big">${money(exp)}</div></div>
+ <div class="card"><div class="muted">Estimated Profit</div><div class="big">${money(sales-exp)}</div></div>
+ <div class="card"><div class="muted">Udhaar Outstanding</div><div class="big">${money(totalUdhaar())}</div></div></div>
+ <div class="card" style="margin-top:15px"><h2>Payment Breakdown</h2>${Object.entries(pay).map(([k,v])=>`<p><b>${k}</b>: ${money(v)}</p>`).join("")}</div>
+ <div class="card" style="margin-top:15px"><h2>Bill History</h2>${bills.map(b=>`<p><b>${esc(b.id)}</b> — ${esc(b.customer)} — ${money(b.total)} — ${b.payment}</p>`).join("")||"<p>No bills yet.</p>"}</div>`;
+}
+
+function searchPage(){
+ document.getElementById("app").innerHTML=`<h1>🔎 Search</h1><div class="card"><input id="searchBox" placeholder="Product, SKU, customer, mobile or bill number" oninput="runSearch()"><div id="searchResults" style="margin-top:15px"></div></div>`;
+}
+function runSearch(){
+ const q=(document.getElementById("searchBox").value||"").toLowerCase(),box=document.getElementById("searchResults");
+ if(!q){box.innerHTML="";return}
+ const s=stock.filter(x=>[x.name,x.sku,x.size,x.color].join(" ").toLowerCase().includes(q));
+ const b=bills.filter(x=>[x.id,x.customer,x.phone].join(" ").toLowerCase().includes(q));
+ box.innerHTML=`<h3>Products</h3>${s.map(x=>`<p>📦 ${esc(x.name)} / ${esc(x.size)} / ${esc(x.color)} — ${x.qty} pcs — ${money(x.price)}</p>`).join("")||"<p class='muted'>No products found.</p>"}<h3>Bills</h3>${b.map(x=>`<p>🧾 ${esc(x.id)} — ${esc(x.customer)} — ${money(x.total)}</p>`).join("")||"<p class='muted'>No bills found.</p>"}`;
+}
+
+
+function settingsPage(){
+ document.getElementById("app").innerHTML=`
+ <h1>⚙️ Reset / Settings</h1>
+
+ <div class="card">
+   <h2>🔄 Change / Reset Options</h2>
+   <p class="muted">Use these options carefully. A backup is recommended before deleting any data.</p>
+
+   <div class="actions">
+     <button class="secondary" onclick="show('backup')">💾 Go to Backup</button>
+     <button class="secondary" onclick="show('dashboard')">🏠 Back to Dashboard</button>
+   </div>
+ </div>
+
+ <div class="card" style="margin-top:15px">
+   <h2>🧹 Reset Individual Data</h2>
+   <p class="muted">Delete only one type of information while keeping the rest of the shop data.</p>
+   <div class="actions">
+     <button class="secondary" onclick="resetSection('stock')">Reset Stock</button>
+     <button class="secondary" onclick="resetSection('bills')">Reset Bills</button>
+     <button class="secondary" onclick="resetSection('customers')">Reset Customers</button>
+     <button class="secondary" onclick="resetSection('expenses')">Reset Expenses</button>
+     <button class="secondary" onclick="resetSection('payments')">Reset Payments / Udhaar</button>
+   </div>
+ </div>
+
+ <div class="card" style="margin-top:15px;border:2px solid #a52d5f">
+   <h2>⚠️ FINAL RESET — ALL DATA</h2>
+   <p><b>This permanently clears all shop data saved in this browser.</b></p>
+   <p class="muted">This will delete stock, bills, customers, expenses, payments and Udhaar records. Download a backup first if you may need the data later.</p>
+   <button onclick="finalResetAll()" style="background:#a52d5f;color:white;border:0;padding:13px 20px;border-radius:10px;font-weight:800;cursor:pointer">
+     🗑️ FINAL RESET ALL DATA
+   </button>
+ </div>`;
+}
+
+function resetSection(section){
+ const labels={
+   stock:"Stock",
+   bills:"Bills",
+   customers:"Customers",
+   expenses:"Expenses",
+   payments:"Payments / Udhaar"
+ };
+ const label=labels[section]||section;
+ if(!confirm(`Are you sure you want to reset ${label}? This cannot be undone unless you have a backup.`)) return;
+
+ if(section==="stock") stock=[];
+ if(section==="bills") bills=[];
+ if(section==="customers") customers=[];
+ if(section==="expenses") expenses=[];
+ if(section==="payments") payments=[];
+
+ save();
+ alert(`${label} has been reset.`);
+ settingsPage();
+}
+
+function finalResetAll(){
+ const first=confirm("⚠️ FINAL RESET\n\nThis will delete ALL MAHALAXMI LADIES WEAR data from this browser.\n\nAre you sure?");
+ if(!first) return;
+
+ const second=prompt('Type RESET ALL to confirm the final deletion:');
+ if(second!=="RESET ALL"){
+   alert("Reset cancelled. Nothing was deleted.");
+   return;
+ }
+
+ bills=[];
+ stock=[];
+ customers=[];
+ expenses=[];
+ payments=[];
+ current=[];
+
+ localStorage.removeItem("mlw_bills");
+ localStorage.removeItem("mlw_stock");
+ localStorage.removeItem("mlw_customers");
+ localStorage.removeItem("mlw_expenses");
+ localStorage.removeItem("mlw_payments");
+
+ save();
+ alert("✅ ALL SHOP DATA HAS BEEN RESET.\n\nMAHALAXMI LADIES WEAR is now ready for fresh data.");
+ show("dashboard");
+}
+
+show("dashboard");
+</script>
+</body>
+</html>
